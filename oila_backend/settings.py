@@ -25,7 +25,12 @@ SECRET_KEY = 'django-insecure-(*#h%bkmd7ph^uucs$kx0g6^=ej!s^*we5_)#7w9%w&t2hg0cv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # Development only - emulator uchun
+ALLOWED_HOSTS = [
+    'anikiuzbot.pythonanywhere.com',  # O'z username ingiz
+    'localhost',
+    '127.0.0.1',
+    '*',  # Development uchun
+]
 
 
 # Application definition
@@ -130,7 +135,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media Files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Custom User Model
@@ -177,9 +187,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8080",
+    "https://anikiuzbot.pythonanywhere.com",  # O'z username ingiz
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # Development uchun - production da False qiling!
 
 CORS_ALLOW_METHODS = [
     'DELETE',
