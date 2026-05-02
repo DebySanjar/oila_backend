@@ -4,28 +4,109 @@ from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from family.models import Family
 
 from .serializers import (
     ParentRegisterSerializer,
     ChildRegisterSerializer,
     LoginSerializer,
-    UserSerializer
+    UserSerializer,
+    CreateFamilySerializer,
+    JoinFamilySerializer,
 )
 
 User = get_user_model()
 
 
+class CreateFamilyView(generics.CreateAPIView):
+    """
+    Yangi oila yaratish (Kattalar uchun)
+    
+    Ota, Ona, Bobo yoki Buvi yangi oila yaratadi va oila kodi oladi.
+    """
+    serializer_class = CreateFamilySerializer
+    permission_classes = [permissions.AllowAny]
+    
+    @swagger_auto_schema(
+        operation_description="Yangi oila yaratish. Faqat kattalar (father, mother, grandfather, grandmother) yarata oladi.",
+        responses={
+            201: openapi.Response(
+                description="Muvaffaqiyatli oila yaratildi",
+                examples={
+                    "application/json": {
+                        "message": "Oila muvaffaqiyatli yaratildi",
+                        "user": {},
+                        "family": {
+                            "family_code": "ABC123",
+                            "family_name": "Dasturchilar oilasi"
+                        }
+                    }
+                }
+            )
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user, family = serializer.save()
+        
+        return Response({
+            'message': 'Oila muvaffaqiyatli yaratildi',
+            'user': UserSerializer(user).data,
+            'family': {
+                'family_code': family.family_code,
+                'family_name': family.family_name,
+            }
+        }, status=status.HTTP_201_CREATED)
+
+
+class JoinFamilyView(generics.CreateAPIView):
+    """
+    Mavjud oilaga qo'shilish
+    
+    Kattalar va bolalar oila kodi orqali oilaga qo'shiladi.
+    """
+    serializer_class = JoinFamilySerializer
+    permission_classes = [permissions.AllowAny]
+    
+    @swagger_auto_schema(
+        operation_description="Mavjud oilaga qo'shilish. Oila kodi talab qilinadi.",
+        responses={
+            201: openapi.Response(
+                description="Muvaffaqiyatli oilaga qo'shildi",
+                schema=UserSerializer
+            )
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        # Get family info
+        family = Family.objects.get(family_code=user.family_code)
+        
+        return Response({
+            'message': 'Muvaffaqiyatli oilaga qo\'shildingiz',
+            'user': UserSerializer(user).data,
+            'family': {
+                'family_code': family.family_code,
+                'family_name': family.family_name,
+            }
+        }, status=status.HTTP_201_CREATED)
+
+
 class ParentRegisterView(generics.CreateAPIView):
     """
-    Ota/Ona royxatdan otish
+    Ota/Ona royxatdan otish (DEPRECATED)
     
-    Ota yoki ona royxatdan otganda avtomatik oila kodi generatsiya qilinadi.
+    Eski API - CreateFamilyView yoki JoinFamilyView ishlatish tavsiya etiladi.
     """
     serializer_class = ParentRegisterSerializer
     permission_classes = [permissions.AllowAny]
     
     @swagger_auto_schema(
-        operation_description="Ota/Ona royxatdan otish. Avtomatik oila kodi beriladi.",
+        operation_description="Ota/Ona royxatdan otish. Avtomatik oila kodi beriladi. (DEPRECATED)",
         responses={
             201: openapi.Response(
                 description="Muvaffaqiyatli royxatdan otildi",

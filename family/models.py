@@ -1,8 +1,53 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
+import string
+import random
 
 User = get_user_model()
+
+
+class Family(models.Model):
+    """Family/Oila model"""
+    family_code = models.CharField(max_length=6, unique=True, db_index=True)
+    family_name = models.CharField(max_length=200, help_text="Oila nomi/tahallusi")
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_families'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'families'
+        ordering = ['-created_at']
+        verbose_name = 'Oila'
+        verbose_name_plural = 'Oilalar'
+    
+    def __str__(self):
+        return f"{self.family_name} ({self.family_code})"
+    
+    @staticmethod
+    def generate_family_code():
+        """Generate unique 6-character family code"""
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            if not Family.objects.filter(family_code=code).exists():
+                return code
+    
+    def get_members(self):
+        """Get all family members"""
+        return User.objects.filter(family_code=self.family_code)
+    
+    def get_parents(self):
+        """Get all parents in family"""
+        return self.get_members().filter(user_type__in=['father', 'mother', 'grandfather', 'grandmother'])
+    
+    def get_children(self):
+        """Get all children in family"""
+        return self.get_members().filter(user_type__in=['son', 'daughter'])
 
 
 class Task(models.Model):

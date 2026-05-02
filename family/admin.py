@@ -1,5 +1,30 @@
 from django.contrib import admin
-from .models import Task, Reward, RewardClaim, UserPoints, ChatMessage, ChatReadReceipt
+from .models import Family, Task, Reward, RewardClaim, UserPoints, ChatMessage, ChatReadReceipt
+
+
+@admin.register(Family)
+class FamilyAdmin(admin.ModelAdmin):
+    """Family admin"""
+    list_display = ['family_name', 'family_code', 'created_by', 'get_members_count', 'created_at']
+    search_fields = ['family_name', 'family_code', 'created_by__phone_number', 'created_by__first_name']
+    readonly_fields = ['family_code', 'created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Oila', {
+            'fields': ('family_name', 'family_code')
+        }),
+        ('Yaratuvchi', {
+            'fields': ('created_by',)
+        }),
+        ('Vaqt', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    
+    def get_members_count(self, obj):
+        return obj.get_members().count()
+    get_members_count.short_description = 'A\'zolar soni'
 
 
 @admin.register(Task)

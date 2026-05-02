@@ -39,11 +39,17 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     """Custom User model"""
     USER_TYPE_CHOICES = (
-        ('parent', 'Ota/Ona'),
-        ('child', 'Farzand'),
+        # Parents/Kattalar
+        ('father', 'Ota'),
+        ('mother', 'Ona'),
+        ('grandfather', 'Bobo'),
+        ('grandmother', 'Buvi'),
+        # Children/Bolalar
+        ('son', 'O\'g\'il bola'),
+        ('daughter', 'Qiz bola'),
     )
     
-    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
+    user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICES)
     phone_number = models.CharField(max_length=15, unique=True)
     family_code = models.CharField(max_length=6, blank=True, null=True, db_index=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
@@ -67,27 +73,15 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.get_full_name() or self.phone_number} ({self.get_user_type_display()})"
     
+    def is_parent(self):
+        """Check if user is a parent (adult)"""
+        return self.user_type in ['father', 'mother', 'grandfather', 'grandmother']
+    
+    def is_child(self):
+        """Check if user is a child"""
+        return self.user_type in ['son', 'daughter']
+    
     def save(self, *args, **kwargs):
-        # Auto-generate family code for parents
-        if self.user_type == 'parent' and not self.family_code:
-            self.family_code = generate_family_code()
-            # Ensure uniqueness
-            while User.objects.filter(family_code=self.family_code).exists():
-                self.family_code = generate_family_code()
+        # Do NOT auto-generate family code anymore
+        # Family code will be set during registration
         super().save(*args, **kwargs)
-
-
-class Family(models.Model):
-    """Family group model"""
-    family_code = models.CharField(max_length=6, unique=True, primary_key=True)
-    name = models.CharField(max_length=100)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_families')
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        db_table = 'families'
-        verbose_name = 'Family'
-        verbose_name_plural = 'Families'
-    
-    def __str__(self):
-        return f"{self.name} ({self.family_code})"
