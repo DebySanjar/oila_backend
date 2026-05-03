@@ -52,7 +52,7 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICES)
     phone_number = models.CharField(max_length=15, unique=True)
     family_code = models.CharField(max_length=6, blank=True, null=True, db_index=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar = models.CharField(max_length=500, blank=True, null=True)  # Store URL instead of file
     date_of_birth = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

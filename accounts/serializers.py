@@ -8,6 +8,9 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     """User serializer"""
+    # Override avatar field to accept both file and URL
+    avatar = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    
     class Meta:
         model = User
         fields = ['id', 'phone_number', 'first_name', 'last_name', 'user_type', 
