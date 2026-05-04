@@ -165,14 +165,15 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     """Chat message serializer"""
     sender_name = serializers.CharField(source='sender.get_full_name', read_only=True)
     sender_type = serializers.CharField(source='sender.user_type', read_only=True)
+    sender_avatar = serializers.CharField(source='sender.avatar', read_only=True)
     reply_to_content = serializers.CharField(source='reply_to.content', read_only=True)
     read_by = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = ChatMessage
         fields = [
             'id', 'family_code', 'sender', 'sender_name', 'sender_type',
-            'message_type', 'content', 'file',
+            'sender_avatar', 'message_type', 'content', 'file',
             'latitude', 'longitude',
             'reply_to', 'reply_to_content',
             'is_edited', 'is_deleted',
@@ -180,7 +181,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'id', 'family_code', 'sender', 'sender_name', 'sender_type',
-            'is_edited', 'is_deleted', 'read_by', 'created_at', 'updated_at'
+            'sender_avatar', 'is_edited', 'is_deleted', 'read_by', 'created_at', 'updated_at'
         ]
     
     def get_read_by(self, obj):
