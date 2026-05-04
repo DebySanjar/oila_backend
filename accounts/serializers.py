@@ -8,14 +8,23 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     """User serializer"""
-    # Override avatar field to accept both file and URL
     avatar = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    
+    family_name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'phone_number', 'first_name', 'last_name', 'user_type', 
-                  'family_code', 'avatar', 'date_of_birth', 'created_at']
+        fields = ['id', 'phone_number', 'first_name', 'last_name', 'user_type',
+                  'family_code', 'family_name', 'avatar', 'date_of_birth', 'created_at']
         read_only_fields = ['id', 'created_at']
+
+    def get_family_name(self, obj):
+        if obj.family_code:
+            try:
+                family = Family.objects.get(family_code=obj.family_code)
+                return family.family_name
+            except Family.DoesNotExist:
+                return None
+        return None
 
 
 class CreateFamilySerializer(serializers.Serializer):

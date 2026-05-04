@@ -215,3 +215,32 @@ class FamilyMembersView(generics.ListAPIView):
         if user.family_code:
             return User.objects.filter(family_code=user.family_code).exclude(id=user.id)
         return User.objects.none()
+
+
+class FamilyInfoView(APIView):
+    """
+    Oila ma'lumotlari - family_name va a'zolar soni
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if not user.family_code:
+            return Response(
+                {'detail': 'Siz hech qanday oilaga tegishli emassiz.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        try:
+            family = Family.objects.get(family_code=user.family_code)
+            members = User.objects.filter(family_code=user.family_code)
+            return Response({
+                'family_code': family.family_code,
+                'family_name': family.family_name,
+                'members_count': members.count(),
+                'members': UserSerializer(members, many=True).data,
+            })
+        except Family.DoesNotExist:
+            return Response(
+                {'detail': 'Oila topilmadi.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )

@@ -6,6 +6,7 @@ from .views import (
     LoginView,
     UserProfileView,
     FamilyMembersView,
+    FamilyInfoView,
     CreateFamilyView,
     JoinFamilyView,
 )
@@ -28,4 +29,5 @@ urlpatterns = [
     # Profile
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('family/members/', FamilyMembersView.as_view(), name='family-members'),
+    path('family/info/', FamilyInfoView.as_view(), name='family-info'),
 ]
